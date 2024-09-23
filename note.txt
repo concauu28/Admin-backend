@@ -2,3 +2,10 @@ tested API
 -internal register
 -login
 -create cus va company
+-create service va request va recurring
+
+-get company, user, specific cus, service,
+
+rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.env' \
+-e "ssh -i ~/ssh/ottawa-concauu.pem" \
+. ubuntu@ec2-18-217-26-218.us-east-2.compute.amazonaws.com:~/app

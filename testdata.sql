@@ -1,6 +1,8 @@
 -- Create DATABASE
 CREATE DATABASE trial;
-
+CREATE DATABASE trial;
+CREATE ROLE my_app_role WITH LOGIN PASSWORD 'some_password';
+GRANT ALL PRIVILEGES ON DATABASE "trial" TO my_app_role;
 -- Create ENUM type for Recurrence Interval
 CREATE TYPE recurrence_interval_type AS ENUM ('Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly');
 

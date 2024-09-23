@@ -1,7 +1,8 @@
 const express = require('express');
 const {createCustomer,createEmployee,handleLogin, getUser, getAccount, getCustomer, getSpecificCustomer, 
     getSpecificCustomerRequests, getCustomerTransactions, createCompany, getService, addCustomerRequest,updateCustomer,
-     getCompany, getRequests,addService, addRecurringRequest} = require('../controllers/userController')
+     getCompany, getRequests,addService, addRecurringRequest, addTransaction} = require('../controllers/userController')
+const {createProvider, addProviderService} = require('../controllers/providerController')
 const { auth } = require('../middleware/auth');
 
 const routerAPI = express.Router();
@@ -28,7 +29,12 @@ routerAPI.post("/postrequest", addCustomerRequest)
 routerAPI.post("/recurringrequest", addRecurringRequest)
 //add new Service
 routerAPI.post("/addservice",addService)
-
+//add new Transaction
+routerAPI.post("/addtransaction",addTransaction)
+//add new Provider
+routerAPI.post("/registerprovider", createProvider)
+//add new Provider Service
+routerAPI.post("/addproviderservice", addProviderService)
 //GET
 //GetUser
 routerAPI.get("/user", getUser)
