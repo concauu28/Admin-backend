@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken")
 
 require("dotenv").config
 
-
+//CREATE
 const createProviderService = async (data) => {
     try {
         const {
@@ -26,7 +26,7 @@ const createProviderService = async (data) => {
         } = data;
 
         // Validate required fields for the user and provider
-        if (!username || !email || !password || !company_name || !provider_initials || !tax_number || !address) {
+        if (!password || !company_name || !provider_initials) {
             return {
                 EC: 1,
                 message: "Missing required fields: username, email, password, company_name, provider_initials, tax_number, and address are required."
@@ -76,7 +76,7 @@ const createProviderServiceService = async (data) => {
         } = data;
 
         // Validate required fields
-        if (!provider_id || !service_id || price === undefined || !availability) {
+        if (!provider_id || !service_id || price === undefined ) {
             return {
                 EC: 1,
                 message: "Missing required fields: provider_id, service_id, price, and availability are required."
@@ -105,6 +105,45 @@ const createProviderServiceService = async (data) => {
 };
 
 
+//GET
+const getListProviderService = async () => {
+    try {
+        const result = await pool.query(
+            `SELECT u.username AS provider_name, p.*
+            FROM providers p
+            JOIN  users u ON p.user_id = u.user_id;`
+        );
+
+        return {
+            EC: 0,
+            list_providers: result.rows
+        };
+    } catch (error) {
+        console.error('Error getting providers:', error.message);
+        return {
+            EC: 2,
+            message: "An error occurred while getting provider services."
+        };
+    }
+}
+const getProviderService = async (user_id) => {
+    try {
+        const result = await pool.query('SELECT * FROM providers WHERE user_id = $1;', [user_id]);
+
+        return {
+            EC: 0,
+            provider: result.rows[0]
+        };
+    } catch (error) {
+        console.error('Error getting provider:', error.message);
+        return {
+            EC: 2,
+            message: "An error occurred while getting the provider."
+        };
+    }
+}
+
+
 module.exports = {
-    createProviderService, createProviderServiceService
+    createProviderService, createProviderServiceService, getListProviderService
 }
