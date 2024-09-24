@@ -407,25 +407,18 @@ const getSpecificCustomerService = async (email) => {
     try {
         const result = await pool.query(`
             SELECT 
+                u.user_id,
                 c.customer_id,
-                c.name AS customer_name,
-                u.email AS customer_email,
+                c.name AS name,
+                u.email AS email,
                 u.phone_number,
                 c.nationality,
-                c.status AS customer_status,
-                c.registration_date,
-                co.company_id,
-                co.company_name,
-                co.company_email,
-                co.tax_number,
-                co.address,
-                co.debt
+                c.status AS status,
+                c.registration_date
             FROM 
                 customers c
             LEFT JOIN 
                 users u ON c.user_id = u.user_id
-            LEFT JOIN 
-                companies co ON c.customer_id = co.customer_id
             WHERE 
                 u.email = $1;
         `, [email]);
@@ -439,7 +432,7 @@ const getSpecificCustomerService = async (email) => {
             return {
                 EC: 0,
                 customer: result.rows[0]
-            };  // Return a single customer object including company information
+            };  // Return a single customer object including user and customer details
         }
 
     } catch (error) {
@@ -450,6 +443,7 @@ const getSpecificCustomerService = async (email) => {
         };
     }
 };
+
 
 const getCustomerRequestsService = async (email) => {
     try {
@@ -617,49 +611,68 @@ const getCustomerTransactionsService = async (email) => {
 
 //UPDATE
 const updateCustomerService = async (data) => {
-    const { name, phone_number, email,nationality, status,id} = data;
+    const { customer_id, user_id, name, nationality, status, phone_number, email } = data;
     try {
-        const result = await pool.query(
+        // Update the customers table
+        const customerResult = await pool.query(
             `UPDATE customers
-             SET name = $1, phone_number = $2, email = $3, nationality = $4, status = $5
-             WHERE customer_id = $6
+             SET name = $1, nationality = $2, status = $3
+             WHERE customer_id = $4
              RETURNING *`,
-            [name, phone_number, email, nationality, status, id]
+            [name, nationality, status, customer_id]
         );
 
-        if (result.rows.length === 0) {
-            return {message:"Khong tim thay khach hang"}
+        // Update the users table for fields like phone_number and email
+        const userResult = await pool.query(
+            `UPDATE users
+             SET phone_number = $1, email = $2
+             WHERE user_id = $3
+             RETURNING *`,
+            [phone_number, email, user_id]
+        );
+
+        if (customerResult.rows.length === 0 || userResult.rows.length === 0) {
+            return { EC:1,message: "Không tìm thấy khách hàng hoặc người dùng" };
         } else {
-            return {message:"Success"}; // Return the updated customer data
+            return { 
+                EC:0,
+                message: "Thành công", 
+                updatedCustomer: customerResult.rows[0], 
+                updatedUser: userResult.rows[0] 
+            };
         }
     } catch (err) {
-        console.error('Error updating customer:', err);
-        return {message:"Khong tim thay khach hang"}
+        console.error('Error updating customer or user:', err);
+        return { message: "Có lỗi xảy ra khi cập nhật khách hàng hoặc người dùng" };
     }
 };
+
+
 const updateCompanyService = async (data) => {
-    const { name, phone_number, email,nationality, status,id} = data;
+    const { company_name, company_email, tax_number, manufacturing_industry, address, debt, company_id } = data;
     try {
         const result = await pool.query(
-            `UPDATE customers
-             SET name = $1, phone_number = $2, email = $3, nationality = $4, status = $5
-             WHERE customer_id = $6
+            `UPDATE companies
+             SET company_name = $1, company_email = $2, tax_number = $3, manufacturing_industry = $4, address = $5, debt = $6
+             WHERE company_id = $7
              RETURNING *`,
-            [name, phone_number, email, nationality, status, id]
+            [company_name, company_email, tax_number, manufacturing_industry, address, debt, company_id]
         );
 
         if (result.rows.length === 0) {
-            return {message:"Khong tim thay khach hang"}
+            return { EC:1,message: "Không tìm thấy công ty" };
         } else {
-            return {message:"Success"}; // Return the updated customer data
+            return { EC:0,message: "Thành công", updatedCompany: result.rows[0] };
         }
     } catch (err) {
-        console.error('Error updating customer:', err);
-        return {message:"Khong tim thay khach hang"}
+        console.error('Error updating company:', err);
+        return { message: "Có lỗi xảy ra khi cập nhật công ty" };
     }
 };
+
+
 module.exports={
     createCustomerService, createEmployeeService, loginService, getUserService, getCustomerService, getSpecificCustomerService,
      getCustomerRequestsService, getCustomerTransactionsService, createCompanyService, getServiceService, addCustomerRequestService,
-     updateCustomerService, getCompanyService, getRequestService, addServiceService, addRecurringService, addTransactionService
+     updateCustomerService, getCompanyService, getRequestService, addServiceService, addRecurringService, addTransactionService, updateCompanyService
 }

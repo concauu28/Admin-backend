@@ -1,7 +1,7 @@
 const {createCustomerService, loginService,getUserService, getCustomerService, getSpecificCustomerService,
       getCustomerRequestsService, getCustomerTransactionsService, createCompanyService, getServiceService,
       addCustomerRequestService, getRequestService, createEmployeeService, getCompanyService, addServiceService,
-      addRecurringService, updateCustomerService, addTransactionService}= require("../services/UserService")
+      addRecurringService, updateCustomerService, addTransactionService, updateCompanyService}= require("../services/UserService")
 
 //LOGIN
 const handleLogin = async(req,res) =>{
@@ -87,6 +87,10 @@ const updateCustomer = async(req,res)=>{
     const result = await updateCustomerService(req.body)
     return res.status(200).json(result)
 }
+const updateCompany = async(req,res)=>{
+    const result = await updateCompanyService(req.body)
+    return res.status(200).json(result)
+}
 
 
 
@@ -94,5 +98,5 @@ const updateCustomer = async(req,res)=>{
 module.exports={
     createCustomer, createCompany, createEmployee, handleLogin, getUser, getAccount, 
     getCustomer, getSpecificCustomer, getRequests, getSpecificCustomerRequests, getCustomerTransactions, getService, addCustomerRequest,
-    updateCustomer, getCompany, addService, addRecurringRequest, addTransaction
+    updateCustomer, getCompany, addService, addRecurringRequest, addTransaction, updateCompany
 }
