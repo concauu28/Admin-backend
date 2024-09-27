@@ -3,6 +3,7 @@ const {createCustomer,createEmployee,handleLogin, getUser, getAccount, getCustom
     getSpecificCustomerRequests, getCustomerTransactions, createCompany, getService, addCustomerRequest,updateCustomer,
      getCompany, getRequests,addService, addRecurringRequest, addTransaction, updateCompany} = require('../controllers/userController')
 const {createProvider, addProviderService, getListProvider} = require('../controllers/providerController')
+const {reportUser} = require('../controllers/reportController')
 const { auth } = require('../middleware/auth');
 
 const routerAPI = express.Router();
@@ -66,3 +67,7 @@ routerAPI.put("/updatecustomer",updateCustomer)
 //UpdateCompany
 routerAPI.put("/updatecompany",updateCompany)
 module.exports = routerAPI; //export default
+
+
+//REPORT
+routerAPI.get("/reportuser", reportUser)
