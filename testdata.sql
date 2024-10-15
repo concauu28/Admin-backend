@@ -195,3 +195,9 @@ CREATE TABLE task_progress (
     updated_by_employee_id INT REFERENCES employees(employee_id),  -- For internal updates
     updated_by_provider_service_id INT REFERENCES provider_services(provider_service_id)  -- For updates from providers
 );
+CREATE TABLE documents (
+    document_id SERIAL PRIMARY KEY,  -- Auto-incrementing ID for each document
+    user_email VARCHAR(255) NOT NULL,  -- Store the email of the user
+    document_name VARCHAR(255) NOT NULL UNIQUE,  -- Store the name of the document
+    uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP  -- Timestamp of the upload
+);

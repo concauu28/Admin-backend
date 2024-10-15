@@ -1,6 +1,8 @@
 const pool = require('../db')
 require("dotenv").config
 // 
+
+//
 const reportUserService = async () => {
     try {
         const result = await pool.query(`
@@ -49,4 +51,5 @@ const reportUserService = async () => {
         };
     }
 };
+
 module.exports = { reportUserService }; //export default

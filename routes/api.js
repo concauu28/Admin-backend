@@ -4,7 +4,9 @@ const {createCustomer,createEmployee,handleLogin, getUser, getAccount, getCustom
      getCompany, getRequests,addService, addRecurringRequest, addTransaction, updateCompany} = require('../controllers/userController')
 const {createProvider, addProviderService, getListProvider, getProvider,getPService, updateProvider,updatePService} = require('../controllers/providerController')
 const {reportUser} = require('../controllers/reportController')
+const {uploadDocument, getDocument,deleteDocument} = require('../controllers/fileController')
 const { auth } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 const routerAPI = express.Router();
 
@@ -64,6 +66,10 @@ routerAPI.get("/getprovider/:userid", getProvider)
 
 //getProviderService
 routerAPI.get("/getproviderservice/:user_id", getPService)
+//REPORT
+routerAPI.get("/reportuser", reportUser)
+//getUserFiles
+routerAPI.get("/getdocuments/:userEmail", getDocument)
 
 //UPDATE
 //UpdateCustomer
@@ -77,7 +83,9 @@ routerAPI.put("/updateprovider",updateProvider)
 //updateProviderService
 routerAPI.put("/updateproviderservice",updatePService)
 
-//REPORT
-routerAPI.get("/reportuser", reportUser)
 
+
+//POST
+routerAPI.post("/uploaddoc",upload.single('file'), uploadDocument)
+routerAPI.delete("/deletedoc",deleteDocument)
 module.exports = routerAPI; //export default

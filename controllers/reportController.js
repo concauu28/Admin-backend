@@ -5,4 +5,5 @@ const reportUser = async (req, res) => {
     return res.status(200).json(result);
 }
 
+
 module.exports = { reportUser }; //export default
