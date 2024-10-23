@@ -46,13 +46,13 @@ routerAPI.get("/getaccount",getAccount)
 //getCustomer
 routerAPI.get("/getcustomer", getCustomer)
 //getCompany
-routerAPI.get("/getcompany/:userEmail", getCompany)
+routerAPI.get("/getcompany/:user_id", getCompany)
 //getspecificCustomer
-routerAPI.get("/getcustomer/:userEmail",getSpecificCustomer)
+routerAPI.get("/getcustomer/:user_id",getSpecificCustomer)
 //getcustomerrequest
-routerAPI.get("/getcustomerreq/:userEmail", getSpecificCustomerRequests)
+routerAPI.get("/getcustomerreq/:user_id", getSpecificCustomerRequests)
 //getcustomertransactions
-routerAPI.get("/getcustomertrans/:userEmail", getCustomerTransactions)
+routerAPI.get("/getcustomertrans/:user_id", getCustomerTransactions)
 //get services
 routerAPI.get("/getservices", getService)
 //get all requests
@@ -69,7 +69,7 @@ routerAPI.get("/getproviderservice/:user_id", getPService)
 //REPORT
 routerAPI.get("/reportuser", reportUser)
 //getUserFiles
-routerAPI.get("/getdocuments/:userEmail", getDocument)
+routerAPI.get("/getdocuments/:user_id", getDocument)
 
 //UPDATE
 //UpdateCustomer

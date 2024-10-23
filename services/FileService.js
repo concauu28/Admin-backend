@@ -21,19 +21,16 @@ const uploadDocService = async (req) => {
     }
 
     const { buffer, originalname, mimetype } = req.file;
-    const { email } = req.body; // Extract email from request body
+    const { user_id } = req.body;
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
             // Save document info to the database
-    const savedDocument = await saveDocumentInfo(email, originalname);
-
+    const savedDocument = await saveDocumentInfo(user_id, originalname);
     if (!savedDocument) {
         return {
           EC: 1,
             message: 'Error saving document info',
           };
         }
-
-
     // Upload the file to S3
     const uploadParams = {
       Bucket: bucketName,
@@ -59,15 +56,15 @@ const uploadDocService = async (req) => {
 };
 
 // Save document info to the database
-const saveDocumentInfo = async (userEmail, documentName) => {
+const saveDocumentInfo = async (user_id, documentName) => {
   try {
     const query = `
-      INSERT INTO documents (user_email, document_name)
+      INSERT INTO documents (user_id, document_name)
       VALUES ($1, $2)
       RETURNING *;
     `;
 
-    const values = [userEmail, documentName];
+    const values = [user_id, documentName];
     const result = await pool.query(query, values);
 
     console.log('Đã lưu thông tin tài liệu:', result.rows[0]);
@@ -78,15 +75,15 @@ const saveDocumentInfo = async (userEmail, documentName) => {
   }
 };
 
-const getDocumentService = async (email) => {
+const getDocumentService = async (user_id) => {
   try {
     const query = `
       SELECT document_name
       FROM documents
-      WHERE user_email = $1;
+      WHERE user_id = $1;
     `;
 
-    const values = [email];
+    const values = [user_id];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
@@ -136,7 +133,6 @@ const deleteDocumentService = async (documentName) => {
       SELECT * FROM documents WHERE document_name = $1;
     `;
     const result = await pool.query(queryCheck, [documentName]);
-
     if (result.rows.length === 0) {
       return {
         EC: 1,

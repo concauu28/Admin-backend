@@ -9,3 +9,10 @@ tested API
 rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.env' \
 -e "ssh -i ~/ssh/ottawa-concauu.pem" \
 . ubuntu@ec2-18-217-26-218.us-east-2.compute.amazonaws.com:~/app
+
+
+sudo systemctl daemon-reload
+sudo systemctl enable myapp-server.service
+sudo systemctl start myapp-server.service
+sudo systemctl enable myapp-client.service
+sudo systemctl start myapp-client.service

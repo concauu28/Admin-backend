@@ -321,26 +321,28 @@ const addTransactionService = async (data) => {
 };
 
 //GET
-const getCompanyService = async (email) => {
+const getCompanyService = async (user_id) => {
     try {
         const result = await pool.query(`
             SELECT co.* 
             FROM companies co
-            JOIN customers cu ON co.customer_id = cu.customer_id
-            JOIN users u ON cu.user_id = u.user_id
-            WHERE u.email = $1;
-        `, [email]);
-
+            INNER JOIN customers cu ON co.customer_id = cu.customer_id
+            INNER JOIN users u ON cu.user_id = u.user_id
+            WHERE u.user_id = $1;
+        `, [user_id]);
+        
         if (result.rows.length === 0) {
-            return { EC: 1, message: "No company found for the provided email." };
+            return { EC: 1, message: "Không tìm thấy công ty nào cho người dùng được cung cấp." };
         } else {
             return { EC: 0, company: result.rows[0] };  // Return the company information
         }
     } catch (error) {
-        console.error('Error fetching company:', error.message);
-        return { EC: 2, message: "An error occurred while fetching the company." };
+        console.error('Lỗi khi tìm công ty:', error.message);
+        return { EC: 2, message: "Có lỗi xảy ra khi tìm kiếm công ty." };
     }
 };
+
+
 const getUserService = async () => {
     try {
         const users = await pool.query(`
@@ -351,6 +353,7 @@ const getUserService = async () => {
                 cu.initials,
                 cu.registration_date,
                 cu.status,
+                u.user_id,
                 u.email,
                 u.phone_number,
                 u.username
@@ -403,7 +406,7 @@ const getServiceService = async () => {
         };
     }
 };
-const getSpecificCustomerService = async (email) => {
+const getSpecificCustomerService = async (user_id) => {
     try {
         const result = await pool.query(`
             SELECT 
@@ -417,16 +420,17 @@ const getSpecificCustomerService = async (email) => {
                 c.registration_date
             FROM 
                 customers c
-            LEFT JOIN 
+            INNER JOIN 
                 users u ON c.user_id = u.user_id
             WHERE 
-                u.email = $1;
-        `, [email]);
+                u.user_id = $1;
+        `, [user_id]);
+        
 
         if (result.rows.length === 0) {
             return {
                 EC: 1,
-                message: "No customer found with the provided email."
+                message: "Không tìm thấy khách hàng nào với ID người dùng được cung cấp."
             };
         } else {
             return {
@@ -436,16 +440,17 @@ const getSpecificCustomerService = async (email) => {
         }
 
     } catch (error) {
-        console.error('Error fetching specific customer:', error.message);
+        console.error('Lỗi khi tìm khách hàng cụ thể:', error.message);
         return {
             EC: 2,
-            message: "An error occurred while fetching the customer."
+            message: "Có lỗi xảy ra khi tìm kiếm khách hàng."
         };
     }
 };
 
 
-const getCustomerRequestsService = async (email) => {
+
+const getCustomerRequestsService = async (user_id) => {
     try {
         const result = await pool.query(`
             SELECT 
@@ -464,27 +469,27 @@ const getCustomerRequestsService = async (email) => {
                 s.notes AS service_notes,
                 t.payment_status,
                 CASE 
-                    WHEN t.payment_status = 'Paid' THEN 'Da thanh toan'
-                    ELSE 'Chua thanh toan'
+                    WHEN t.payment_status = 'Paid' THEN 'Đã thanh toán'
+                    ELSE 'Chưa thanh toán'
                 END AS is_paid
             FROM 
-                users u
-            INNER JOIN 
-                customers c ON u.user_id = c.user_id
+                customers c
             INNER JOIN 
                 customer_requests cr ON c.customer_id = cr.customer_id
             INNER JOIN 
                 services s ON cr.service_id = s.service_id
             LEFT JOIN 
                 transactions t ON cr.customer_id = t.customer_id AND cr.service_id = t.service_id
+            INNER JOIN 
+                users u ON c.user_id = u.user_id
             WHERE 
-                u.email = $1;
-        `, [email]);
+                u.user_id = $1;
+        `, [user_id]);
 
         if (result.rows.length === 0) {
             return {
                 EC: 1,
-                message: "No requests found for the specified customer."
+                message: "Không tìm thấy yêu cầu nào cho người dùng được cung cấp."
             };
         } else {
             return {
@@ -494,13 +499,15 @@ const getCustomerRequestsService = async (email) => {
         }
 
     } catch (error) {
-        console.error('Error fetching customer requests:', error.message);
+        console.error('Lỗi khi tìm yêu cầu của khách hàng:', error.message);
         return {
             EC: 2,
-            message: "An error occurred while fetching the customer requests."
+            message: "Có lỗi xảy ra khi tìm kiếm yêu cầu của khách hàng."
         };
     }
 };
+
+
 const getRequestService = async () => {
     try {
         // Query to get all requests from customers, including their names
@@ -559,7 +566,7 @@ const getRequestService = async () => {
 };
 
 
-const getCustomerTransactionsService = async (email) => {
+const getCustomerTransactionsService = async (customer_id) => {
     try {
         const result = await pool.query(`
             SELECT 
@@ -577,21 +584,19 @@ const getCustomerTransactionsService = async (email) => {
             INNER JOIN 
                 customers c ON t.customer_id = c.customer_id
             INNER JOIN 
-                users u ON c.user_id = u.user_id
-            INNER JOIN 
                 services s ON t.service_id = s.service_id
             LEFT JOIN 
                 recurring_services rs ON t.recurring_service_id = rs.recurring_service_id
             WHERE 
-                u.email = $1
+                c.customer_id = $1
             ORDER BY 
                 t.payment_date DESC;
-        `, [email]);
+        `, [customer_id]);
 
         if (result.rows.length === 0) {
             return {
                 EC: 1,
-                message: "No transactions found for the specified customer."
+                message: "Không tìm thấy giao dịch nào cho khách hàng được cung cấp."
             };
         } else {
             return {
@@ -601,13 +606,14 @@ const getCustomerTransactionsService = async (email) => {
         }
 
     } catch (error) {
-        console.error('Error fetching customer transactions:', error.message);
+        console.error('Lỗi khi tìm giao dịch của khách hàng:', error.message);
         return {
             EC: 2,
-            message: "An error occurred while fetching the customer transactions."
+            message: "Có lỗi xảy ra khi tìm kiếm giao dịch của khách hàng."
         };
     }
 };
+
 
 //UPDATE
 const updateCustomerService = async (data) => {

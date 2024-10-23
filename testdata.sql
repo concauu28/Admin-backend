@@ -197,7 +197,8 @@ CREATE TABLE task_progress (
 );
 CREATE TABLE documents (
     document_id SERIAL PRIMARY KEY,  -- Auto-incrementing ID for each document
-    user_email VARCHAR(255) NOT NULL,  -- Store the email of the user
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,  -- Store the user_id as a foreign key from the users table
     document_name VARCHAR(255) NOT NULL UNIQUE,  -- Store the name of the document
     uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP  -- Timestamp of the upload
 );
+

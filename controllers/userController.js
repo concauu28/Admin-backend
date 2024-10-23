@@ -57,7 +57,7 @@ const getCustomer= async(req, res)=>{
 
 }
 const getCompany = async(req,res)=>{
-    const company = await getCompanyService(req.params.userEmail)
+    const company = await getCompanyService(req.params.user_id)
     return res.status(200).json(company)
 }
 const getRequests = async(req,res)=>{
@@ -65,15 +65,15 @@ const getRequests = async(req,res)=>{
     return res.status(200).json(result)
 }
 const getSpecificCustomer = async(req,res)=>{
-    const customer = await getSpecificCustomerService(req.params.userEmail)
+    const customer = await getSpecificCustomerService(req.params.user_id)
     return res.status(200).json(customer)
 }
 const getSpecificCustomerRequests = async(req,res)=>{
-    const customer = await getCustomerRequestsService(req.params.userEmail)
+    const customer = await getCustomerRequestsService(req.params.user_id)
     return res.status(200).json(customer)
 }
 const getCustomerTransactions = async(req,res)=>{
-    const transactions = await getCustomerTransactionsService(req.params.userEmail)
+    const transactions = await getCustomerTransactionsService(req.params.user_id)
     return res.status(200).json(transactions)
 }
 const getService = async(req,res)=>{

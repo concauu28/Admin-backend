@@ -4,8 +4,8 @@ const uploadDocument = async (req, res) => {
     return res.status(200).json(result);
 }
 const getDocument = async (req, res) => {
-    const email=req.params.userEmail;
-    const result = await getDocumentService(email);
+    const id=req.params.user_id;
+    const result = await getDocumentService(id);
     return res.status(200).json(result)
 }
 const deleteDocument = async (req, res) => {
