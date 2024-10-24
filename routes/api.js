@@ -1,10 +1,11 @@
 const express = require('express');
 const {createCustomer,createEmployee,handleLogin, getUser, getAccount, getCustomer, getSpecificCustomer, 
     getSpecificCustomerRequests, getCustomerTransactions, createCompany, getService, addCustomerRequest,updateCustomer,
-     getCompany, getRequests,addService, addRecurringRequest, addTransaction, updateCompany} = require('../controllers/userController')
+     getCompany, getRequests,addService, addRecurringRequest, addTransaction, updateCompany,updateRequest} = require('../controllers/userController')
 const {createProvider, addProviderService, getListProvider, getProvider,getPService, updateProvider,updatePService} = require('../controllers/providerController')
 const {reportUser} = require('../controllers/reportController')
 const {uploadDocument, getDocument,deleteDocument} = require('../controllers/fileController')
+const {emailSender} = require('../controllers/emailController')
 const { auth } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
@@ -76,7 +77,8 @@ routerAPI.get("/getdocuments/:user_id", getDocument)
 routerAPI.put("/updatecustomer",updateCustomer)
 //UpdateCompany
 routerAPI.put("/updatecompany",updateCompany)
-
+//updateRequest
+routerAPI.put("/updaterequest",updateRequest)
 //updateProvider
 routerAPI.put("/updateprovider",updateProvider)
 
@@ -88,4 +90,8 @@ routerAPI.put("/updateproviderservice",updatePService)
 //POST
 routerAPI.post("/uploaddoc",upload.single('file'), uploadDocument)
 routerAPI.delete("/deletedoc",deleteDocument)
+
+
+//Email
+routerAPI.post("/sendemail", emailSender)
 module.exports = routerAPI; //export default

@@ -12,7 +12,5 @@ rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.env' \
 
 
 sudo systemctl daemon-reload
-sudo systemctl enable myapp-server.service
-sudo systemctl start myapp-server.service
-sudo systemctl enable myapp-client.service
-sudo systemctl start myapp-client.service
+sudo systemctl restart myapp-server.service
+sudo systemctl restart myapp-client.service

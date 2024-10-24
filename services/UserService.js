@@ -414,6 +414,7 @@ const getSpecificCustomerService = async (user_id) => {
                 c.customer_id,
                 c.name AS name,
                 u.email AS email,
+                u.username AS username,
                 u.phone_number,
                 c.nationality,
                 c.status AS status,
@@ -514,7 +515,7 @@ const getRequestService = async () => {
         const result = await pool.query(`
             SELECT 
                 c.name AS customer_name,
-                c.customer_id,
+                c.user_id AS user_id,
                 cr.request_id,
                 cr.request_date,
                 cr.status AS request_status,
@@ -617,7 +618,7 @@ const getCustomerTransactionsService = async (customer_id) => {
 
 //UPDATE
 const updateCustomerService = async (data) => {
-    const { customer_id, user_id, name, nationality, status, phone_number, email } = data;
+    const { customer_id, user_id, username, name, nationality, status, phone_number, email } = data;
     try {
         // Update the customers table
         const customerResult = await pool.query(
@@ -631,10 +632,10 @@ const updateCustomerService = async (data) => {
         // Update the users table for fields like phone_number and email
         const userResult = await pool.query(
             `UPDATE users
-             SET phone_number = $1, email = $2
-             WHERE user_id = $3
+             SET phone_number = $1, email = $2, username=$3
+             WHERE user_id = $4
              RETURNING *`,
-            [phone_number, email, user_id]
+            [phone_number, email,username, user_id]
         );
 
         if (customerResult.rows.length === 0 || userResult.rows.length === 0) {
@@ -676,9 +677,31 @@ const updateCompanyService = async (data) => {
     }
 };
 
+const updateRequestService = async (data) => {
+    const { request_id, city, area_type, deadline, request_status, notes } = data;
+    try {
+        const result = await pool.query(
+            `UPDATE customer_requests
+             SET city = $1, area_type = $2, deadline = $3, status = $4, notes = $5
+             WHERE request_id = $6
+             RETURNING *`,
+            [city, area_type, deadline, request_status, notes, request_id]
+        );
 
+        if (result.rows.length === 0) {
+            return { EC:1,message: "Không cập nhật thành công yêu cầu" };
+        } else {
+            return { EC:0,message: "Thành công", updatedRequest: result.rows[0] };
+        }
+    } catch (err) {
+        console.error('Error updating request:', err);
+        return { message: "Có lỗi xảy ra khi cập nhật yêu cầu" };
+    }
+
+};
 module.exports={
     createCustomerService, createEmployeeService, loginService, getUserService, getCustomerService, getSpecificCustomerService,
      getCustomerRequestsService, getCustomerTransactionsService, createCompanyService, getServiceService, addCustomerRequestService,
-     updateCustomerService, getCompanyService, getRequestService, addServiceService, addRecurringService, addTransactionService, updateCompanyService
+     updateCustomerService, getCompanyService, getRequestService, addServiceService, addRecurringService, addTransactionService, updateCompanyService,
+     updateRequestService
 }

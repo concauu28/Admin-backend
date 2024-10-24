@@ -16,7 +16,7 @@ CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     custom_user_id VARCHAR(20) UNIQUE NOT NULL,  -- Custom user ID
     username VARCHAR(255) UNIQUE,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255),
     password VARCHAR(255) NOT NULL,
     phone_number VARCHAR(20),
     role VARCHAR(50),  -- e.g., "Employee", "Provider", "Customer"
@@ -73,7 +73,7 @@ CREATE TABLE companies (
     company_id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES customers(customer_id) ON DELETE CASCADE,
     company_name VARCHAR(255),
-    company_email VARCHAR(255) UNIQUE NOT NULL,
+    company_email VARCHAR(255),
     tax_number VARCHAR(50),
     manufacturing_industry VARCHAR(255),
     address VARCHAR(255),  -- Stores the company’s address
