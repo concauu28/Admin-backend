@@ -236,10 +236,10 @@ const updateProviderService = async (data) => {
         // Update the users table for fields like phone_number and email
         const userResult = await pool.query(
             `UPDATE users
-             SET phone_number = $1, email = $2
+             SET phone_number = $1, email = $2, status = $4
              WHERE user_id = $3
              RETURNING *`,
-            [phone_number, email, user_id]
+            [phone_number, email, user_id, status]
         );
 
         // Check if both queries were successful

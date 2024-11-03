@@ -1,11 +1,11 @@
 const express = require('express');
 const {createCustomer,createEmployee,handleLogin, getUser, getAccount, getCustomer, getSpecificCustomer, 
     getSpecificCustomerRequests, getCustomerTransactions, createCompany, getService, addCustomerRequest,updateCustomer,
-     getCompany, getRequests,addService, addRecurringRequest, addTransaction, updateCompany,updateRequest} = require('../controllers/userController')
+     getCompany, getRequests,addService, addRecurringRequest, addTransaction, updateCompany,updateRequest,updateService} = require('../controllers/userController')
 const {createProvider, addProviderService, getListProvider, getProvider,getPService, updateProvider,updatePService} = require('../controllers/providerController')
 const {reportUser} = require('../controllers/reportController')
 const {uploadDocument, getDocument,deleteDocument} = require('../controllers/fileController')
-const {emailSender} = require('../controllers/emailController')
+const {emailSender,scheduleJob, getScheduleJob,deleteScheduleJob,updateScheduleJob, getSpecificScheduleJob} = require('../controllers/emailController')
 const { auth } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
@@ -81,7 +81,8 @@ routerAPI.put("/updatecompany",updateCompany)
 routerAPI.put("/updaterequest",updateRequest)
 //updateProvider
 routerAPI.put("/updateprovider",updateProvider)
-
+//updateService
+routerAPI.put("/updateservice",updateService)
 //updateProviderService
 routerAPI.put("/updateproviderservice",updatePService)
 
@@ -94,4 +95,9 @@ routerAPI.delete("/deletedoc",deleteDocument)
 
 //Email
 routerAPI.post("/sendemail", emailSender)
+routerAPI.post("/schedule",scheduleJob)
+routerAPI.get("/getjobs", getScheduleJob)
+routerAPI.get("/getspecificjob/:user_id", getSpecificScheduleJob)
+routerAPI.delete("/deletejob/:cron_id",deleteScheduleJob)
+routerAPI.put("/updatejob",updateScheduleJob)
 module.exports = routerAPI; //export default

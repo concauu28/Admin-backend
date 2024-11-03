@@ -15,12 +15,13 @@ CREATE SEQUENCE provider_id_seq START 1;
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     custom_user_id VARCHAR(20) UNIQUE NOT NULL,  -- Custom user ID
-    username VARCHAR(255) UNIQUE,
+    username VARCHAR(255) ,
     email VARCHAR(255),
     password VARCHAR(255) NOT NULL,
     phone_number VARCHAR(20),
     role VARCHAR(50),  -- e.g., "Employee", "Provider", "Customer"
     status VARCHAR(50)  -- e.g., Active, Inactive
+    note TEXT  -- Any additional notes or remarks
 );
 
 -- Function to Generate Custom User ID
@@ -63,7 +64,7 @@ CREATE TABLE customers (
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,  -- Link to the users table
     name VARCHAR(255) NOT NULL,
     nationality VARCHAR(100),
-    initials VARCHAR(10) UNIQUE,  -- Added column for customer initials with UNIQUE constraint
+    initials VARCHAR(255) UNIQUE,  -- Added column for customer initials with UNIQUE constraint
     registration_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50)  -- e.g., Active, Inactive
 );
@@ -200,5 +201,15 @@ CREATE TABLE documents (
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,  -- Store the user_id as a foreign key from the users table
     document_name VARCHAR(255) NOT NULL UNIQUE,  -- Store the name of the document
     uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP  -- Timestamp of the upload
+);
+CREATE TABLE scheduledemail (
+    cron_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    cron_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    cron_time VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

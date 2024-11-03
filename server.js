@@ -15,6 +15,11 @@ app.use(express.urlencoded({extended: true}))
 //route
 app.use('/api/', apiRoutes);
 
+//cron jobs
+const {initializeCronJobs} = require('./services/EmailService');
 
 
-app.listen(PORT, ()=> console.log('Server running on PORT 5000'))
+app.listen(PORT, async()=>{
+    console.log('Server running on PORT 5000')
+    await initializeCronJobs();
+})

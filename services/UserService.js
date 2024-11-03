@@ -60,6 +60,7 @@ const loginService = async (email, password) => {
                 EC: 0,
                 access_token,
                 user: {
+                    user_id: user.user_id,
                     email: user.email,
                     username: user.username,
                     role: user.role,
@@ -78,7 +79,7 @@ const loginService = async (email, password) => {
 
 
 //CREATE
-const createCustomerService = async (name, username, phone_number, email, nationality, initials, status) => {
+const createCustomerService = async (name, username, phone_number, email, nationality, initials, status, note) => {
     try {
         // Define role as 'Customer'
         const role = 'Customer';
@@ -90,9 +91,9 @@ const createCustomerService = async (name, username, phone_number, email, nation
 
         // Insert into the users table
         const newUser = await pool.query(
-            `INSERT INTO users (username, email, password, phone_number, role, status)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING user_id, custom_user_id`,
-            [username, email, hashedPassword, phone_number, role, status]
+            `INSERT INTO users (username, email, password, phone_number, role, status, note)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING user_id, custom_user_id`,
+            [username, email, hashedPassword, phone_number, role, status, note]
         );
 
         const { user_id, custom_user_id } = newUser.rows[0];
@@ -413,7 +414,9 @@ const getSpecificCustomerService = async (user_id) => {
                 u.user_id,
                 c.customer_id,
                 c.name AS name,
+                c.initials AS initials,
                 u.email AS email,
+                u.note AS note,
                 u.username AS username,
                 u.phone_number,
                 c.nationality,
@@ -448,8 +451,6 @@ const getSpecificCustomerService = async (user_id) => {
         };
     }
 };
-
-
 
 const getCustomerRequestsService = async (user_id) => {
     try {
@@ -618,24 +619,24 @@ const getCustomerTransactionsService = async (customer_id) => {
 
 //UPDATE
 const updateCustomerService = async (data) => {
-    const { customer_id, user_id, username, name, nationality, status, phone_number, email } = data;
+    const { customer_id, user_id, username, initials, note, name, nationality, status, phone_number, email } = data;
     try {
         // Update the customers table
         const customerResult = await pool.query(
             `UPDATE customers
-             SET name = $1, nationality = $2, status = $3
-             WHERE customer_id = $4
+             SET name = $1, nationality = $2, status = $3, initials = $4
+             WHERE customer_id = $5
              RETURNING *`,
-            [name, nationality, status, customer_id]
+            [name, nationality, status, initials, customer_id]
         );
 
         // Update the users table for fields like phone_number and email
         const userResult = await pool.query(
             `UPDATE users
-             SET phone_number = $1, email = $2, username=$3
-             WHERE user_id = $4
+             SET phone_number = $1, email = $2, username=$3, note = $4
+             WHERE user_id = $5
              RETURNING *`,
-            [phone_number, email,username, user_id]
+            [phone_number, email,username, note, user_id]
         );
 
         if (customerResult.rows.length === 0 || userResult.rows.length === 0) {
@@ -650,20 +651,20 @@ const updateCustomerService = async (data) => {
         }
     } catch (err) {
         console.error('Error updating customer or user:', err);
-        return { message: "Có lỗi xảy ra khi cập nhật khách hàng hoặc người dùng" };
+        return { message: "Có lỗi xảy ra khi cập nhật khách hàng hoặc người dùng"};
     }
 };
 
 
 const updateCompanyService = async (data) => {
-    const { company_name, company_email, tax_number, manufacturing_industry, address, debt, company_id } = data;
+    const { company_name, company_email, note , tax_number, manufacturing_industry, address, debt, company_id } = data;
     try {
         const result = await pool.query(
             `UPDATE companies
-             SET company_name = $1, company_email = $2, tax_number = $3, manufacturing_industry = $4, address = $5, debt = $6
-             WHERE company_id = $7
+             SET company_name = $1, company_email = $2, tax_number = $3, manufacturing_industry = $4, address = $5, debt = $6, note = $7
+             WHERE company_id = $8
              RETURNING *`,
-            [company_name, company_email, tax_number, manufacturing_industry, address, debt, company_id]
+            [company_name, company_email, tax_number, manufacturing_industry, address, debt,note, company_id]
         );
 
         if (result.rows.length === 0) {
@@ -699,9 +700,30 @@ const updateRequestService = async (data) => {
     }
 
 };
+const updateServiceService = async (data) => {
+    const { service_id, service_name, service_description, price, type_of_service, completion_time, notes } = data;
+    try {
+        const result = await pool.query(
+            `UPDATE services
+             SET service_name = $1, service_description = $2, price = $3, type_of_service = $4, completion_time = $5, notes = $6
+             WHERE service_id = $7
+             RETURNING *`,
+            [service_name, service_description, price, type_of_service, completion_time, notes, service_id]
+        );
+
+        if (result.rows.length === 0) {
+            return { EC:1,message: "Không cập nhật thành công dịch vụ" };
+        } else {
+            return { EC:0,message: "Thành công", updatedService: result.rows[0] };
+        }
+    } catch (err) {
+        console.error('Error updating service:', err);
+        return { message: "Có lỗi xảy ra khi cập nhật dịch vụ" };
+    }
+}
 module.exports={
     createCustomerService, createEmployeeService, loginService, getUserService, getCustomerService, getSpecificCustomerService,
      getCustomerRequestsService, getCustomerTransactionsService, createCompanyService, getServiceService, addCustomerRequestService,
      updateCustomerService, getCompanyService, getRequestService, addServiceService, addRecurringService, addTransactionService, updateCompanyService,
-     updateRequestService
+     updateRequestService, updateServiceService
 }
