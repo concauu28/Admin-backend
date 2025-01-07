@@ -3,9 +3,9 @@ const multer = require('multer');
 // Configure memory storage
 const storage = multer.memoryStorage();
 
-// File filter (optional): Only allow specific file types
+// File filter: Allow specific file types and fix encoding
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|pdf|mp4/;
+  const allowedTypes = /jpeg|jpg|png|gif|pdf|mp4/; // Extendable list of file types
   const extName = allowedTypes.test(file.originalname.toLowerCase());
   const mimeType = allowedTypes.test(file.mimetype);
 
@@ -16,11 +16,15 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Create the Multer instance with memory storage
+// Multer middleware with filename encoding fix
 const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // Limit to 10 MB
-  fileFilter: fileFilter,
+  fileFilter: (req, file, cb) => {
+    // Re-encode the original name from latin1 to utf8
+    file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    cb(null, true);
+  },
 });
 
 module.exports = upload;

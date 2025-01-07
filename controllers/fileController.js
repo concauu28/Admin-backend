@@ -1,5 +1,6 @@
 const {uploadDocService, getDocumentService, deleteDocumentService}=require('../services/FileService');
 const uploadDocument = async (req, res) => {
+    console.log("check req",req.file)
     const result = await uploadDocService(req);
     return res.status(200).json(result);
 }

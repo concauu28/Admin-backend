@@ -197,10 +197,11 @@ CREATE TABLE task_progress (
     updated_by_provider_service_id INT REFERENCES provider_services(provider_service_id)  -- For updates from providers
 );
 CREATE TABLE documents (
-    document_id SERIAL PRIMARY KEY,  -- Auto-incrementing ID for each document
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,  -- Store the user_id as a foreign key from the users table
-    document_name VARCHAR(255) NOT NULL UNIQUE,  -- Store the name of the document
-    uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP  -- Timestamp of the upload
+    document_id SERIAL PRIMARY KEY, -- Auto-incrementing ID for each document
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE, -- Foreign key from the users table
+    document_name VARCHAR(255) NOT NULL, -- Name of the document (no unique constraint)
+    uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, -- Timestamp of the upload
+    key VARCHAR(255) NOT NULL UNIQUE -- Unique key column
 );
 CREATE TABLE scheduledemail (
     cron_id SERIAL PRIMARY KEY,

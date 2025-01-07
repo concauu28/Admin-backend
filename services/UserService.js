@@ -349,17 +349,19 @@ const getUserService = async () => {
         const users = await pool.query(`
             SELECT 
                 cu.customer_id,
-                cu.name,
+                cu.name AS name,
                 cu.nationality,
                 cu.initials,
                 cu.registration_date,
-                cu.status,
+                cu.status AS customer_status,
                 u.user_id,
                 u.email,
                 u.phone_number,
-                u.username
+                u.username,
+                c.company_name AS customer_company_name
             FROM customers cu
             JOIN users u ON cu.user_id = u.user_id
+            LEFT JOIN companies c ON cu.customer_id = c.customer_id
         `);
 
         return users.rows;
@@ -368,6 +370,7 @@ const getUserService = async () => {
         return null;
     }
 };
+
 
 const getCustomerService=async ()=>{
     try {

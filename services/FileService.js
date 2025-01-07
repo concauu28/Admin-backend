@@ -1,6 +1,8 @@
 const { S3Client, PutObjectCommand, GetObjectCommand,DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const pool = require('../db'); 
+const crypto = require('crypto');
+
 
 // Initialize S3 Client
 const s3 = new S3Client({
@@ -10,6 +12,7 @@ const s3 = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
+const randomBytes = (bytes) => crypto.randomBytes(bytes).toString('hex');
 
 const uploadDocService = async (req) => {
   try {
@@ -23,8 +26,14 @@ const uploadDocService = async (req) => {
     const { buffer, originalname, mimetype } = req.file;
     const { user_id } = req.body;
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
-            // Save document info to the database
-    const savedDocument = await saveDocumentInfo(user_id, originalname);
+    // Generate a random string and append it to the file name
+    const randomString = randomBytes(8); // 8 bytes = 16 characters
+    const fileName = originalname.split('.').slice(0, -1).join('.');
+    const fileExtension = originalname.split('.').pop();
+    const uniqueKey = `${fileName}-${randomString}.${fileExtension}`;
+
+    // Save document info to the database
+    const savedDocument = await saveDocumentInfo(user_id, originalname, uniqueKey);
     if (!savedDocument) {
         return {
           EC: 1,
@@ -34,7 +43,7 @@ const uploadDocService = async (req) => {
     // Upload the file to S3
     const uploadParams = {
       Bucket: bucketName,
-      Key: originalname,
+      Key: uniqueKey,
       Body: buffer,
       ContentType: mimetype,
     };
@@ -56,15 +65,15 @@ const uploadDocService = async (req) => {
 };
 
 // Save document info to the database
-const saveDocumentInfo = async (user_id, documentName) => {
+const saveDocumentInfo = async (user_id, documentName, uniqueKey) => {
   try {
     const query = `
-      INSERT INTO documents (user_id, document_name)
-      VALUES ($1, $2)
+      INSERT INTO documents (user_id, document_name, key)
+      VALUES ($1, $2, $3)
       RETURNING *;
     `;
 
-    const values = [user_id, documentName];
+    const values = [user_id, documentName, uniqueKey];
     const result = await pool.query(query, values);
 
     console.log('Đã lưu thông tin tài liệu:', result.rows[0]);
@@ -75,10 +84,11 @@ const saveDocumentInfo = async (user_id, documentName) => {
   }
 };
 
+
 const getDocumentService = async (user_id) => {
   try {
     const query = `
-      SELECT document_name
+      SELECT document_name, key
       FROM documents
       WHERE user_id = $1;
     `;
@@ -100,7 +110,7 @@ const getDocumentService = async (user_id) => {
       result.rows.map(async (doc) => {
         const getObjectParams = {
           Bucket: bucketName,
-          Key: doc.document_name,
+          Key: doc.key, // Use the unique key for S3 retrieval
         };
 
         const signedUrl = await getSignedUrl(
@@ -109,7 +119,7 @@ const getDocumentService = async (user_id) => {
           { expiresIn: 3600 } // URL expires in 1 hour
         );
 
-        return { document_name: doc.document_name, signedUrl };
+        return { document_key: doc.key, document_name: doc.document_name, signedUrl };
       })
     );
 
@@ -126,13 +136,14 @@ const getDocumentService = async (user_id) => {
     };
   }
 };
-const deleteDocumentService = async (documentName) => {
+
+const deleteDocumentService = async (documentKey) => {
   try {
-    // 1. Check if the document exists in the 'documents' table
+    // 1. Check if the document exists in the 'documents' table using the key
     const queryCheck = `
-      SELECT * FROM documents WHERE document_name = $1;
+      SELECT * FROM documents WHERE key = $1;
     `;
-    const result = await pool.query(queryCheck, [documentName]);
+    const result = await pool.query(queryCheck, [documentKey]);
     if (result.rows.length === 0) {
       return {
         EC: 1,
@@ -140,11 +151,11 @@ const deleteDocumentService = async (documentName) => {
       };
     }
 
-    // 2. Delete the document from the 'documents' table
+    // 2. Delete the document from the 'documents' table using the key
     const queryDelete = `
-      DELETE FROM documents WHERE document_name = $1 RETURNING *;
+      DELETE FROM documents WHERE key = $1 RETURNING *;
     `;
-    const deleteResult = await pool.query(queryDelete, [documentName]);
+    const deleteResult = await pool.query(queryDelete, [documentKey]);
 
     if (deleteResult.rows.length === 0) {
       return {
@@ -153,11 +164,11 @@ const deleteDocumentService = async (documentName) => {
       };
     }
 
-    // 3. Delete the document from the S3 bucket
+    // 3. Delete the document from the S3 bucket using the key
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
     const deleteParams = {
       Bucket: bucketName,
-      Key: documentName,
+      Key: documentKey,
     };
 
     const deleteCommand = new DeleteObjectCommand(deleteParams);
@@ -176,6 +187,7 @@ const deleteDocumentService = async (documentName) => {
     };
   }
 };
+
 
 
 module.exports = { uploadDocService, getDocumentService, deleteDocumentService };
